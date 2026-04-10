@@ -82,12 +82,26 @@ export default function move(gameState){
     //Object.keys(moveSafety) returns ["up", "down", "left", "right"]
     //.filter() filters the array based on the function provided as an argument (using arrow function syntax here)
     //In this case we want to filter out any of these directions for which moveSafety[direction] == false
-    const safeMoves = Object.keys(moveSafety).filter(direction => moveSafety[direction]);
-    if (safeMoves.length == 0) {
-        console.log(`MOVE ${gameState.turn}: No safe moves detected! Moving down`);
-        return { move: "down" };
+    for (const snake of otherSnakes) {
+        if (snake.id === gameState.you.id) {
+            continue;
+        }
+        
+        for (const bodyPart of snake.body) {
+            if (possibleMoves.up.x === bodyPart.x && possibleMoves.up.y === bodyPart.y) {
+                moveSafety.up = false;
+            }
+            if (possibleMoves.down.x === bodyPart.x && possibleMoves.down.y === bodyPart.y) {
+                moveSafety.down = false;
+            }
+            if (possibleMoves.left.x === bodyPart.x && possibleMoves.left.y === bodyPart.y) {
+                moveSafety.left = false;
+            }
+            if (possibleMoves.right.x === bodyPart.x && possibleMoves.right.y === bodyPart.y) {
+                moveSafety.right = false;
+            }
+        }
     }
-    
     // Choose a random move from the safe moves
     const nextMove = safeMoves[Math.floor(Math.random() * safeMoves.length)];
     
