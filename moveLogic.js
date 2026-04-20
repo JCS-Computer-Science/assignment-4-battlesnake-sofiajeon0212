@@ -8,6 +8,7 @@ export default function move(gameState){
     
     const myHead = gameState.you.body[0];
     const myNeck = gameState.you.body[1];
+    const myBody = gameState.you.body; 
     
     if (myNeck.x < myHead.x) moveSafety.left = false;
     else if (myNeck.x > myHead.x) moveSafety.right = false;
@@ -22,7 +23,6 @@ export default function move(gameState){
     if (myHead.x + 1 >= boardWidth) moveSafety.right = false;
     if (myHead.x - 1 < 0) moveSafety.left = false;
 
-    const myBody = gameState.you.body;
     const possibleMoves = { 
         up: { x: myHead.x, y: myHead.y + 1 },
         down: { x: myHead.x, y: myHead.y - 1 },
@@ -32,10 +32,14 @@ export default function move(gameState){
     
     for (let i = 0; i < myBody.length - 1; i++) {
         const bp = myBody[i];
-        if (possibleMoves.up.x === bp.x && possibleMoves.up.y === bp.y) moveSafety.up = false;
-        if (possibleMoves.down.x === bp.x && possibleMoves.down.y === bp.y) moveSafety.down = false;
-        if (possibleMoves.left.x === bp.x && possibleMoves.left.y === bp.y) moveSafety.left = false;
-        if (possibleMoves.right.x === bp.x && possibleMoves.right.y === bp.y) moveSafety.right = false;
+        const isTail = (i === myBody.length - 1);
+        
+        if (!isTail) {
+            if (possibleMoves.up.x === bp.x && possibleMoves.up.y === bp.y) moveSafety.up = false;
+            if (possibleMoves.down.x === bp.x && possibleMoves.down.y === bp.y) moveSafety.down = false;
+            if (possibleMoves.left.x === bp.x && possibleMoves.left.y === bp.y) moveSafety.left = false;
+            if (possibleMoves.right.x === bp.x && possibleMoves.right.y === bp.y) moveSafety.right = false;
+        }
     }
     
     for (const snake of gameState.board.snakes) {
@@ -90,16 +94,4 @@ export default function move(gameState){
     const nextMove = safeMoves[0];
     console.log(`MOVE ${gameState.turn}: No food, moving ${nextMove}`);
     return { move: nextMove };
-}
-
-for (let i = 0; i < myBody.length - 1; i++) {
-    const bp = myBody[i];
-    const isTail = (i === myBody.length - 1);
-    
-    if (!isTail) {
-                if (possibleMoves.up.x === bp.x && possibleMoves.up.y === bp.y) moveSafety.up = false;
-        if (possibleMoves.down.x === bp.x && possibleMoves.down.y === bp.y) moveSafety.down = false;
-        if (possibleMoves.left.x === bp.x && possibleMoves.left.y === bp.y) moveSafety.left = false;
-        if (possibleMoves.right.x === bp.x && possibleMoves.right.y === bp.y) moveSafety.right = false;
-    }
 }
