@@ -97,3 +97,9 @@ for (let i = 0; i < myBody.length - 1; i++) {
     const isTail = (i === myBody.length - 1);
     
     if (!isTail) {
+                if (possibleMoves.up.x === bp.x && possibleMoves.up.y === bp.y) moveSafety.up = false;
+        if (possibleMoves.down.x === bp.x && possibleMoves.down.y === bp.y) moveSafety.down = false;
+        if (possibleMoves.left.x === bp.x && possibleMoves.left.y === bp.y) moveSafety.left = false;
+        if (possibleMoves.right.x === bp.x && possibleMoves.right.y === bp.y) moveSafety.right = false;
+    }
+}
