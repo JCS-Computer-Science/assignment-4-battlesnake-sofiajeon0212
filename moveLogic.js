@@ -55,15 +55,12 @@ export default function move(gameState){
     const safeMoves = Object.keys(moveSafety).filter(d => moveSafety[d]);
     const myHealth = gameState.you.health;
     
-    if (myHealth > 70) {
-        const nextMove = safeMoves[0];
-        console.log(`MOVE ${gameState.turn}: Health is high (${myHealth}), moving straight`);
-        return { move: nextMove };
+    if (myHealth > 70 && safeMoves.length > 0) {
+        const randomSafeMove = safeMoves[0];
+        console.log(`MOVE ${gameState.turn}: Health is high (${myHealth}), playing safe with ${randomSafeMove}`);
+        return { move: randomSafeMove };
     }
-    if (safeMoves.length === 0) {
-        console.log(`MOVE ${gameState.turn}: No safe moves! Moving down`);
-        return { move: "down" };
-    }
+
     
     const food = gameState.board.food;
     
