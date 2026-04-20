@@ -92,15 +92,8 @@ export default function move(gameState){
     return { move: nextMove };
 }
 
-const myTail = myBody[myBody.length - 1];
-const nextHeadPositions = {
-    up: { x: myHead.x, y: myHead.y + 1 },
-    down: { x: myHead.x, y: myHead.y - 1 },
-    left: { x: myHead.x - 1, y: myHead.y },
-    right: { x: myHead.x + 1, y: myHead.y }
-};
-
-for (const [direction, pos] of Object.entries(nextHeadPositions)) {
-    if (pos.x === myTail.x && pos.y === myTail.y) {
-    }
-}
+for (let i = 0; i < myBody.length - 1; i++) {
+    const bp = myBody[i];
+    const isTail = (i === myBody.length - 1);
+    
+    if (!isTail) {
