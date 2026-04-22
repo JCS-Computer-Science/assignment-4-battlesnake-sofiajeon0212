@@ -71,28 +71,16 @@ export default function move(gameState){
         console.log(`MOVE ${gameState.turn}: No safe moves! Moving down`);
         return { move: "down" };
     }
-    
-    const myHealth = gameState.you.health;
-    let shouldChaseFood = false;
-    let foodPriority = 0; 
-    
-    if (myHealth < 25) {
-        shouldChaseFood = true;
-        foodPriority = 2;
-        console.log(`Health ${myHealth}: CRITICAL - must find food!`);
-    } else if (myHealth < 45) {
-        shouldChaseFood = true;
-        foodPriority = 1;
-        console.log(`Health ${myHealth}: Will eat if nearby`);
-    } else {
-        console.log(`Health ${myHealth}: Avoiding food, staying safe`);
-    }
-    
-    const isHungry = shouldChaseFood;
-        
+        const myHealth = gameState.you.health;
     const food = gameState.board.food;
     
-    if (food.length > 0) {
+    if (myHealth >= 55) {
+        const nextMove = safeMoves[0];
+        console.log(`MOVE ${gameState.turn}: Health ${myHealth} is high, ignoring food and staying safe`);
+        return { move: nextMove };
+    }
+    
+    if (myHealth < 30 && food.length > 0) {
         let closestFood = null;
         let shortestDistance = Infinity;
         
@@ -118,11 +106,10 @@ export default function move(gameState){
         }
         
         const nextMove = bestMove || safeMoves[0];
-        console.log(`MOVE ${gameState.turn}: ${nextMove} towards food at (${closestFood.x},${closestFood.y})`);
+        console.log(`MOVE ${gameState.turn}: Health ${myHealth} is low! Moving ${nextMove} towards food`);
         return { move: nextMove };
     }
     
     const nextMove = safeMoves[0];
-    console.log(`MOVE ${gameState.turn}: No food, moving ${nextMove}`);
+    console.log(`MOVE ${gameState.turn}: Health ${myHealth} is moderate, avoiding food and staying hidden`);
     return { move: nextMove };
-}
