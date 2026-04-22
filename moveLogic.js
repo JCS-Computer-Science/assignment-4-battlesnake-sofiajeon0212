@@ -53,20 +53,20 @@ export default function move(gameState){
     }
     
     const safeMoves = Object.keys(moveSafety).filter(d => moveSafety[d]);
-        for (const snake of gameState.board.snakes) {
+    for (const snake of gameState.board.snakes) {
         if (snake.id === gameState.you.id) continue;
         
         const enemyHead = snake.body[0];
         const distanceToEnemyHead = Math.abs(myHead.x - enemyHead.x) + Math.abs(myHead.y - enemyHead.y);
-        
-        if (distanceToEnemyHead <= 2) {
-            if (enemyHead.x < myHead.x) moveSafety.left = false;
-            if (enemyHead.x > myHead.x) moveSafety.right = false;
-            if (enemyHead.y < myHead.y) moveSafety.down = false;
-            if (enemyHead.y > myHead.y) moveSafety.up = false;
+
+        if (distanceToEnemyHead === 1) {
+            if (enemyHead.x === myHead.x && enemyHead.y === myHead.y + 1) moveSafety.up = false;
+            if (enemyHead.x === myHead.x && enemyHead.y === myHead.y - 1) moveSafety.down = false;
+            if (enemyHead.x === myHead.x + 1 && enemyHead.y === myHead.y) moveSafety.right = false;
+            if (enemyHead.x === myHead.x - 1 && enemyHead.y === myHead.y) moveSafety.left = false;
         }
     }
-
+    
     if (safeMoves.length === 0) {
         console.log(`MOVE ${gameState.turn}: No safe moves! Moving down`);
         return { move: "down" };
