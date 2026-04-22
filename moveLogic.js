@@ -74,19 +74,22 @@ export default function move(gameState){
     
     const myHealth = gameState.you.health;
     let shouldChaseFood = false;
+    let foodPriority = 0; 
     
-    if (myHealth < 30) {
-        shouldChaseFood = true;  // 매우 배고픔
-        console.log(`Health ${myHealth}: DESPERATE for food!`);
-    } else if (myHealth < 60) {
-        shouldChaseFood = true;  // 약간 배고픔 (실수: 30-60 사이도 다 쫓음)
-        console.log(`Health ${myHealth}: A little hungry`);
+    if (myHealth < 25) {
+        shouldChaseFood = true;
+        foodPriority = 2;
+        console.log(`Health ${myHealth}: CRITICAL - must find food!`);
+    } else if (myHealth < 45) {
+        shouldChaseFood = true;
+        foodPriority = 1;
+        console.log(`Health ${myHealth}: Will eat if nearby`);
     } else {
-        console.log(`Health ${myHealth}: Not hungry, avoiding everything`);
+        console.log(`Health ${myHealth}: Avoiding food, staying safe`);
     }
     
     const isHungry = shouldChaseFood;
-    
+        
     const food = gameState.board.food;
     
     if (food.length > 0) {
