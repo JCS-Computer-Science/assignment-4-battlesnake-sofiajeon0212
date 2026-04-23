@@ -53,6 +53,7 @@ export default function move(gameState){
     }
     
     const safeMoves = Object.keys(moveSafety).filter(d => moveSafety[d]);
+    
     for (const snake of gameState.board.snakes) {
         if (snake.id === gameState.you.id) continue;
         
@@ -71,7 +72,8 @@ export default function move(gameState){
         console.log(`MOVE ${gameState.turn}: No safe moves! Moving down`);
         return { move: "down" };
     }
-        const myHealth = gameState.you.health;
+    
+    const myHealth = gameState.you.health;
     const food = gameState.board.food;
     
     if (myHealth >= 55) {
@@ -113,3 +115,4 @@ export default function move(gameState){
     const nextMove = safeMoves[0];
     console.log(`MOVE ${gameState.turn}: Health ${myHealth} is moderate, avoiding food and staying hidden`);
     return { move: nextMove };
+}
