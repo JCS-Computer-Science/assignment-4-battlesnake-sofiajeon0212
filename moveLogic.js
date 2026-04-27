@@ -51,7 +51,15 @@ export default function move(gameState){
             if (possibleMoves.right.x === bp.x && possibleMoves.right.y === bp.y) moveSafety.right = false;
         }
     }
-    
+        const hazards = gameState.board.hazards || [];
+   
+        for (const hazard of hazards) {
+        if (possibleMoves.up.x === hazard.x && possibleMoves.up.y === hazard.y) moveSafety.up = false;
+        if (possibleMoves.down.x === hazard.x && possibleMoves.down.y === hazard.y) moveSafety.down = false;
+        if (possibleMoves.left.x === hazard.x && possibleMoves.left.y === hazard.y) moveSafety.left = false;
+        if (possibleMoves.right.x === hazard.x && possibleMoves.right.y === hazard.y) moveSafety.right = false;
+    }
+
     const safeMoves = Object.keys(moveSafety).filter(d => moveSafety[d]);
     
     for (const snake of gameState.board.snakes) {
