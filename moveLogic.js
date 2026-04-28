@@ -82,34 +82,21 @@ export default function move(gameState) {
         return { move: "down" };
     }
     
-    const myHealth = gameState.you.health;    
+    const myHealth = gameState.you.health;
     const food = gameState.board.food;
     
     if (myHealth >= 55) {
-        const cyclePattern = ['up', 'right', 'down', 'left'];
-        let nextMove = null;
+        const cyclePattern = ['right', 'down', 'left', 'up'];
+        let currentDirection = cyclePattern[0];
         
         if (lastDirection) {
             const currentIndex = cyclePattern.indexOf(lastDirection);
-            const patternMove = cyclePattern[(currentIndex + 1) % cyclePattern.length];
-            
-            if (safeMoves.includes(patternMove)) {
-                nextMove = patternMove;
-            }
+            currentDirection = cyclePattern[(currentIndex + 1) % cyclePattern.length];
         }
         
-        if (!nextMove && safeMoves.length > 0) {
-            nextMove = safeMoves[0];
-        }
-        
-        if (!nextMove) {
-            console.log(`MOVE ${gameState.turn}: No safe moves in cycle!`);
-            return { move: "down" };
-        }
-        
-        lastDirection = nextMove;
-        console.log(`MOVE ${gameState.turn}: Health ${myHealth} is high, cycling with ${nextMove}`);
-        return { move: nextMove };
+        lastDirection = currentDirection;
+        console.log(`MOVE ${gameState.turn}: Cycling with ${currentDirection}`);
+        return { move: currentDirection };
     }
 
     
