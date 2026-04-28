@@ -1,3 +1,4 @@
+let lastDirection = null;
 move(gameState) {
     let moveSafety = {
         up: true,
@@ -81,22 +82,34 @@ move(gameState) {
         return { move: "down" };
     }
     
-    const myHealth = gameState.you.health;
-    let lastDirection = null;
-    
+    const myHealth = gameState.you.health;    
     if (myHealth >= 55) {
         const cyclePattern = ['up', 'right', 'down', 'left'];
-        let nextMove = cyclePattern[0];  
+        let nextMove = null;
         
         if (lastDirection) {
             const currentIndex = cyclePattern.indexOf(lastDirection);
-            nextMove = cyclePattern[(currentIndex + 1) % cyclePattern.length];
+            const patternMove = cyclePattern[(currentIndex + 1) % cyclePattern.length];
+            
+            if (safeMoves.includes(patternMove)) {
+                nextMove = patternMove;
+            }
+        }
+        
+        if (!nextMove && safeMoves.length > 0) {
+            nextMove = safeMoves[0];
+        }
+        
+        if (!nextMove) {
+            console.log(`MOVE ${gameState.turn}: No safe moves in cycle!`);
+            return { move: "down" };
         }
         
         lastDirection = nextMove;
-        console.log(`MOVE ${gameState.turn}: Cycling with ${nextMove}`);
+        console.log(`MOVE ${gameState.turn}: Health ${myHealth} is high, cycling with ${nextMove}`);
         return { move: nextMove };
     }
+
     
     if (myHealth < 30 && food.length > 0) {
         let closestFood = null;
