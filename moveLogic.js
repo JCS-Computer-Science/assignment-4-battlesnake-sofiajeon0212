@@ -70,43 +70,16 @@ export default function move(gameState) {
         }
     }
 
+    const hazards = gameState.board.hazards || [];
+   
+    for (const hazard of hazards) {
+        if (possibleMoves.up.x === hazard.x && possibleMoves.up.y === hazard.y) moveSafety.up = false;
+        if (possibleMoves.down.x === hazard.x && possibleMoves.down.y === hazard.y) moveSafety.down = false;
+        if (possibleMoves.left.x === hazard.x && possibleMoves.left.y === hazard.y) moveSafety.left = false;
+        if (possibleMoves.right.x === hazard.x && possibleMoves.right.y === hazard.y) moveSafety.right = false;
+    }
     const safeMoves = Object.keys(moveSafety).filter(d => moveSafety[d]);
     
-    for (const snake of gameState.board.snakes) {
-        if (snake.id === gameState.you.id) continue;
-        
-        const enemyHead = snake.body[0];
-        const distanceToEnemyHead = Math.abs(myHead.x - enemyHead.x) + Math.abs(myHead.y - enemyHead.y);
-
-        if (distanceToEnemyHead === 1) {
-            if (enemyHead.x === myHead.x && enemyHead.y === myHead.y + 1) moveSafety.up = false;
-            if (enemyHead.x === myHead.x && enemyHead.y === myHead.y - 1) moveSafety.down = false;
-            if (enemyHead.x === myHead.x + 1 && enemyHead.y === myHead.y) moveSafety.right = false;
-            if (enemyHead.x === myHead.x - 1 && enemyHead.y === myHead.y) moveSafety.left = false;
-        }
-    }
-        for (const snake of gameState.board.snakes) {
-        if (snake.id === gameState.you.id) continue;
-        
-        const enemyHead = snake.body[0];
-        const distanceToEnemy = Math.abs(myHead.x - enemyHead.x) + Math.abs(myHead.y - enemyHead.y);
-        
-        if (distanceToEnemy <= 3) {
-            const enemyDirection = {
-                x: enemyHead.x - myHead.x,
-                y: enemyHead.y - myHead.y
-            };
-            
-            if (Math.abs(enemyDirection.x) > Math.abs(enemyDirection.y)) {
-                if (enemyDirection.x > 0) moveSafety.right = false;
-                else moveSafety.left = false;
-            } else {
-                if (enemyDirection.y > 0) moveSafety.up = false;
-                else moveSafety.down = false;
-            }
-        }
-    }
-
     if (safeMoves.length === 0) {
         console.log(`MOVE ${gameState.turn}: No safe moves! Moving down`);
         return { move: "down" };
