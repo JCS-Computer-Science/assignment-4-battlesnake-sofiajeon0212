@@ -54,21 +54,22 @@ export default function move(gameState) {
             const dy = enemyHead.y - myHead.y;
             
             if (Math.abs(dx) > Math.abs(dy)) {
-                if (dx > 0) moveSafety.left = false;
-                else moveSafety.right = false;
+                if (dx > 0) moveSafety.right = false;
+                else moveSafety.left = false;
             } else {
-                if (dy > 0) moveSafety.down = false;
-                else moveSafety.up = false;
-            }
-            
-            if (distanceToEnemy === 1) {
-                if (enemyHead.x === myHead.x && enemyHead.y === myHead.y + 1) moveSafety.up = false;
-                if (enemyHead.x === myHead.x && enemyHead.y === myHead.y - 1) moveSafety.down = false;
-                if (enemyHead.x === myHead.x + 1 && enemyHead.y === myHead.y) moveSafety.right = false;
-                if (enemyHead.x === myHead.x - 1 && enemyHead.y === myHead.y) moveSafety.left = false;
+                if (dy > 0) moveSafety.up = false;
+                else moveSafety.down = false;
             }
         }
+        
+        if (distanceToEnemy === 1) {
+            if (enemyHead.x === myHead.x && enemyHead.y === myHead.y + 1) moveSafety.up = false;
+            if (enemyHead.x === myHead.x && enemyHead.y === myHead.y - 1) moveSafety.down = false;
+            if (enemyHead.x === myHead.x + 1 && enemyHead.y === myHead.y) moveSafety.right = false;
+            if (enemyHead.x === myHead.x - 1 && enemyHead.y === myHead.y) moveSafety.left = false;
+        }
     }
+
 
     const hazards = gameState.board.hazards || [];
    
