@@ -87,16 +87,29 @@ export default function move(gameState) {
     
     if (myHealth >= 55) {
         const cyclePattern = ['right', 'down', 'left', 'up'];
-        let currentDirection = cyclePattern[0];
+        let nextMove = null;
         
         if (lastDirection) {
             const currentIndex = cyclePattern.indexOf(lastDirection);
-            currentDirection = cyclePattern[(currentIndex + 1) % cyclePattern.length];
+            const patternMove = cyclePattern[(currentIndex + 1) % cyclePattern.length];
+            
+            if (safeMoves.includes(patternMove)) {
+                nextMove = patternMove;
+            }
         }
         
-        lastDirection = currentDirection;
-        console.log(`MOVE ${gameState.turn}: Cycling with ${currentDirection}`);
-        return { move: currentDirection };
+        if (!nextMove && safeMoves.length > 0) {
+            nextMove = safeMoves[0];
+        }
+        
+        if (!nextMove) {
+            console.log(`MOVE ${gameState.turn}: No safe moves in cycle`);
+            return { move: "down" };
+        }
+        
+        lastDirection = nextMove;
+        console.log(`MOVE ${gameState.turn}: Health ${myHealth} cycling with ${nextMove}`);
+        return { move: nextMove };
     }
 
     
