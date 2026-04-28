@@ -1,5 +1,5 @@
 let lastDirection = null;
-move(gameState) {
+export default function move(gameState) {
     let moveSafety = {
         up: true,
         down: true,
@@ -83,6 +83,8 @@ move(gameState) {
     }
     
     const myHealth = gameState.you.health;    
+    const food = gameState.board.food;
+    
     if (myHealth >= 55) {
         const cyclePattern = ['up', 'right', 'down', 'left'];
         let nextMove = null;
