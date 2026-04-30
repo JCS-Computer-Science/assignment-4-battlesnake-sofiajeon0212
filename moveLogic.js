@@ -1,4 +1,33 @@
 let lastDirection = null;
+
+function findBestFoodMove(myHead, safeMoves, possibleMoves, food) {
+    let closestFood = null;
+    let shortestDistance = Infinity;
+    
+    for (const foodPiece of food) {
+        const distance = Math.abs(myHead.x - foodPiece.x) + Math.abs(myHead.y - foodPiece.y);
+        if (distance < shortestDistance) {
+            shortestDistance = distance;
+            closestFood = foodPiece;
+        }
+    }
+    
+    let bestMove = null;
+    let bestDistance = Infinity;
+    
+    for (const move of safeMoves) {
+        const nextPos = possibleMoves[move];
+        const distanceToFood = Math.abs(nextPos.x - closestFood.x) + Math.abs(nextPos.y - closestFood.y);
+        
+        if (distanceToFood < bestDistance) {
+            bestDistance = distanceToFood;
+            bestMove = move;
+        }
+    }
+    
+    return bestMove || safeMoves[0];
+}
+
 export default function move(gameState) {
     let moveSafety = {
         up: true,
@@ -46,6 +75,17 @@ export default function move(gameState) {
     for (const snake of gameState.board.snakes) {
         if (snake.id === gameState.you.id) continue;
         
+        for (const bp of snake.body) {
+            if (possibleMoves.up.x === bp.x && possibleMoves.up.y === bp.y) moveSafety.up = false;
+            if (possibleMoves.down.x === bp.x && possibleMoves.down.y === bp.y) moveSafety.down = false;
+            if (possibleMoves.left.x === bp.x && possibleMoves.left.y === bp.y) moveSafety.left = false;
+            if (possibleMoves.right.x === bp.x && possibleMoves.right.y === bp.y) moveSafety.right = false;
+        }
+    }
+    
+    for (const snake of gameState.board.snakes) {
+        if (snake.id === gameState.you.id) continue;
+        
         const enemyHead = snake.body[0];
         const distanceToEnemy = Math.abs(myHead.x - enemyHead.x) + Math.abs(myHead.y - enemyHead.y);
         
@@ -61,15 +101,7 @@ export default function move(gameState) {
                 else moveSafety.down = false;
             }
         }
-        
-        if (distanceToEnemy === 1) {
-            if (enemyHead.x === myHead.x && enemyHead.y === myHead.y + 1) moveSafety.up = false;
-            if (enemyHead.x === myHead.x && enemyHead.y === myHead.y - 1) moveSafety.down = false;
-            if (enemyHead.x === myHead.x + 1 && enemyHead.y === myHead.y) moveSafety.right = false;
-            if (enemyHead.x === myHead.x - 1 && enemyHead.y === myHead.y) moveSafety.left = false;
-        }
     }
-
 
     const hazards = gameState.board.hazards || [];
    
@@ -79,6 +111,7 @@ export default function move(gameState) {
         if (possibleMoves.left.x === hazard.x && possibleMoves.left.y === hazard.y) moveSafety.left = false;
         if (possibleMoves.right.x === hazard.x && possibleMoves.right.y === hazard.y) moveSafety.right = false;
     }
+    
     const safeMoves = Object.keys(moveSafety).filter(d => moveSafety[d]);
     
     if (safeMoves.length === 0) {
@@ -116,33 +149,19 @@ export default function move(gameState) {
         return { move: nextMove };
     }
     
-    if (myHealth >= 30 && myHealth < 55 && food.length > 0) {
-        let closestFood = null;
-        let shortestDistance = Infinity;
-        
-        for (const foodPiece of food) {
-            const distance = Math.abs(myHead.x - foodPiece.x) + Math.abs(myHead.y - foodPiece.y);
-            if (distance < shortestDistance) {
-                shortestDistance = distance;
-                closestFood = foodPiece;
-            }
-        }
-        
-        let bestMove = null;
-        let bestDistance = Infinity;
-        
-        for (const move of safeMoves) {
-            const nextPos = possibleMoves[move];
-            const distanceToFood = Math.abs(nextPos.x - closestFood.x) + Math.abs(nextPos.y - closestFood.y);
-            
-            if (distanceToFood < bestDistance) {
-                bestDistance = distanceToFood;
-                bestMove = move;
-            }
-        }
-        
-        const nextMove = bestMove || safeMoves[0];
+    if (myHealth >= 30 && food.length > 0) {
+        const nextMove = findBestFoodMove(myHead, safeMoves, possibleMoves, food);
         console.log(`MOVE ${gameState.turn}: Health ${myHealth} in middle range, moving towards food`);
         return { move: nextMove };
     }
+    
+    if (myHealth < 30 && food.length > 0) {
+        const nextMove = findBestFoodMove(myHead, safeMoves, possibleMoves, food);
+        console.log(`MOVE ${gameState.turn}: Health ${myHealth} is low! Moving towards food urgently`);
+        return { move: nextMove };
+    }
+    
+    const nextMove = safeMoves[0];
+    console.log(`MOVE ${gameState.turn}: Health ${myHealth}, just surviving`);
+    return { move: nextMove };
 }
