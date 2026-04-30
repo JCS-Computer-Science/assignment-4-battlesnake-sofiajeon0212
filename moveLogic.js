@@ -102,11 +102,6 @@ export default function move(gameState) {
             }
         }
         
-        if (myHealth >= 30 && myHealth < 55) {
-        const nextMove = safeMoves[0];
-        console.log(`MOVE ${gameState.turn}: Health ${myHealth} in middle range, just surviving`);
-        return { move: nextMove };
-    }
         if (!nextMove && safeMoves.length > 0) {
             nextMove = safeMoves[0];
         }
@@ -121,8 +116,7 @@ export default function move(gameState) {
         return { move: nextMove };
     }
     
-    
-    if (food.length > 0) {
+    if (myHealth >= 30 && myHealth < 55 && food.length > 0) {
         let closestFood = null;
         let shortestDistance = Infinity;
         
@@ -148,11 +142,7 @@ export default function move(gameState) {
         }
         
         const nextMove = bestMove || safeMoves[0];
-        console.log(`MOVE ${gameState.turn}: Health ${myHealth} seeking food`);
+        console.log(`MOVE ${gameState.turn}: Health ${myHealth} in middle range, moving towards food`);
         return { move: nextMove };
     }
-    
-    const nextMove = safeMoves[0];
-    console.log(`MOVE ${gameState.turn}: No food available, moving safe`);
-    return { move: nextMove };
 }
