@@ -102,6 +102,11 @@ export default function move(gameState) {
             }
         }
         
+        if (myHealth >= 30 && myHealth < 55) {
+        const nextMove = safeMoves[0];
+        console.log(`MOVE ${gameState.turn}: Health ${myHealth} in middle range, just surviving`);
+        return { move: nextMove };
+    }
         if (!nextMove && safeMoves.length > 0) {
             nextMove = safeMoves[0];
         }
@@ -115,9 +120,9 @@ export default function move(gameState) {
         console.log(`MOVE ${gameState.turn}: Health ${myHealth} cycling with ${nextMove}`);
         return { move: nextMove };
     }
-
     
-    if (myHealth < 30 && food.length > 0) {
+    
+    if (food.length > 0) {
         let closestFood = null;
         let shortestDistance = Infinity;
         
@@ -143,11 +148,11 @@ export default function move(gameState) {
         }
         
         const nextMove = bestMove || safeMoves[0];
-        console.log(`MOVE ${gameState.turn}: Health ${myHealth} is low! Moving ${nextMove} towards food`);
+        console.log(`MOVE ${gameState.turn}: Health ${myHealth} seeking food`);
         return { move: nextMove };
     }
     
     const nextMove = safeMoves[0];
-    console.log(`MOVE ${gameState.turn}: Health ${myHealth} is moderate, avoiding food and staying hidden`);
+    console.log(`MOVE ${gameState.turn}: No food available, moving safe`);
     return { move: nextMove };
 }
