@@ -28,6 +28,20 @@ function findBestFoodMove(myHead, safeMoves, possibleMoves, food) {
     return bestMove || safeMoves[0];
 }
 
+function isSafeFromSnakes(myHead, possibleMoves, gameState) {
+    for (const snake of gameState.board.snakes) {
+        if (snake.id === gameState.you.id) continue;
+        
+        const enemyHead = snake.body[0];
+        const distance = Math.abs(myHead.x - enemyHead.x) + Math.abs(myHead.y - enemyHead.y);
+        
+        if (distance <= 2) {
+            return false;
+        }
+    }
+    return true;
+}
+
 export default function move(gameState) {
     let moveSafety = {
         up: true,
@@ -94,11 +108,11 @@ export default function move(gameState) {
             const dy = enemyHead.y - myHead.y;
             
             if (Math.abs(dx) > Math.abs(dy)) {
-                if (dx > 0) moveSafety.right = false;
-                else moveSafety.left = false;
+                if (dx > 0) moveSafety.left = false;
+                else moveSafety.right = false;
             } else {
-                if (dy > 0) moveSafety.up = false;
-                else moveSafety.down = false;
+                if (dy > 0) moveSafety.down = false;
+                else moveSafety.up = false;
             }
         }
     }
@@ -121,8 +135,9 @@ export default function move(gameState) {
     
     const myHealth = gameState.you.health;
     const food = gameState.board.food;
+    const isCompletelySafe = isSafeFromSnakes(myHead, possibleMoves, gameState);
     
-    if (myHealth >= 55) {
+    if (myHealth >= 55 && isCompletelySafe) {
         const cyclePattern = ['right', 'down', 'left', 'up'];
         let nextMove = null;
         
