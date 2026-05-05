@@ -28,6 +28,17 @@ function findBestFoodMove(myHead, safeMoves, possibleMoves, food) {
     return bestMove || safeMoves[0];
 }
 
+function getNearestEnemyDistance(myHead, gameState) {
+    let minDistance = Infinity;
+    for (const snake of gameState.board.snakes) {
+        if (snake.id === gameState.you.id) continue;
+        const enemyHead = snake.body[0];
+        const distance = Math.abs(myHead.x - enemyHead.x) + Math.abs(myHead.y - enemyHead.y);
+        minDistance = Math.min(minDistance, distance);
+    }
+    return minDistance;
+}
+
 export default function move(gameState) {
     let moveSafety = {
         up: true,
@@ -82,28 +93,6 @@ export default function move(gameState) {
             if (possibleMoves.right.x === bp.x && possibleMoves.right.y === bp.y) moveSafety.right = false;
         }
     }
-    
-    let nearestEnemyDistance = Infinity;
-    for (const snake of gameState.board.snakes) {
-        if (snake.id === gameState.you.id) continue;
-        
-        const enemyHead = snake.body[0];
-        const distanceToEnemy = Math.abs(myHead.x - enemyHead.x) + Math.abs(myHead.y - enemyHead.y);
-        nearestEnemyDistance = Math.min(nearestEnemyDistance, distanceToEnemy);
-        
-        if (distanceToEnemy <= 3) {
-            const dx = enemyHead.x - myHead.x;
-            const dy = enemyHead.y - myHead.y;
-            
-            if (Math.abs(dx) > Math.abs(dy)) {
-                if (dx > 0) moveSafety.left = false;
-                else moveSafety.right = false;
-            } else {
-                if (dy > 0) moveSafety.down = false;
-                else moveSafety.up = false;
-            }
-        }
-    }
 
     const hazards = gameState.board.hazards || [];
    
@@ -114,6 +103,8 @@ export default function move(gameState) {
         if (possibleMoves.right.x === hazard.x && possibleMoves.right.y === hazard.y) moveSafety.right = false;
     }
     
+    const enemyDistance = getNearestEnemyDistance(myHead, gameState);
+    
     const safeMoves = Object.keys(moveSafety).filter(d => moveSafety[d]);
     
     if (safeMoves.length === 0) {
@@ -121,12 +112,65 @@ export default function move(gameState) {
         return { move: "down" };
     }
     
+    for (const snake of gameState.board.snakes) {
+        if (snake.id === gameState.you.id) continue;
+        const enemyHead = snake.body[0];
+        const enemyNeck = snake.body[1];
+        const distance = Math.abs(myHead.x - enemyHead.x) + Math.abs(myHead.y - enemyHead.y);
+        
+        if (distance === 2) {
+            const enemyDir = {
+                x: enemyHead.x - enemyNeck.x,
+                y: enemyHead.y - enemyNeck.y
+            };
+            const nextEnemyPos = {
+                x: enemyHead.x + enemyDir.x,
+                y: enemyHead.y + enemyDir.y
+            };
+            
+            if (nextEnemyPos.x === myHead.x && nextEnemyPos.y === myHead.y) {
+                for (const move of safeMoves) {
+                    const nextPos = possibleMoves[move];
+                    if (Math.abs(nextPos.x - enemyHead.x) + Math.abs(nextPos.y - enemyHead.y) > 1) {
+                        console.log(`MOVE ${gameState.turn}: Dodging enemy head-on! ${move}`);
+                        return { move: move };
+                    }
+                }
+            }
+        }
+    }
+    
     const myHealth = gameState.you.health;
     const food = gameState.board.food;
     
-    const isFarFromSnakes = nearestEnemyDistance > 3;
+    if (enemyDistance <= 2) {
+        let bestEscape = null;
+        let bestDistance = -1;
+        
+        for (const move of safeMoves) {
+            const nextPos = possibleMoves[move];
+            let minDistToEnemy = Infinity;
+            
+            for (const snake of gameState.board.snakes) {
+                if (snake.id === gameState.you.id) continue;
+                const enemyHead = snake.body[0];
+                const dist = Math.abs(nextPos.x - enemyHead.x) + Math.abs(nextPos.y - enemyHead.y);
+                minDistToEnemy = Math.min(minDistToEnemy, dist);
+            }
+            
+            if (minDistToEnemy > bestDistance) {
+                bestDistance = minDistToEnemy;
+                bestEscape = move;
+            }
+        }
+        
+        if (bestEscape) {
+            console.log(`MOVE ${gameState.turn}: Enemy very close! Escaping with ${bestEscape}`);
+            return { move: bestEscape };
+        }
+    }
     
-    if (myHealth >= 55 && isFarFromSnakes && safeMoves.length > 0) {
+    if (myHealth >= 55 && enemyDistance > 3) {
         const cyclePattern = ['right', 'down', 'left', 'up'];
         let nextMove = null;
         
