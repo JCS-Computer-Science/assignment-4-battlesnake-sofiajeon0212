@@ -28,20 +28,6 @@ function findBestFoodMove(myHead, safeMoves, possibleMoves, food) {
     return bestMove || safeMoves[0];
 }
 
-function isSafeFromSnakes(myHead, possibleMoves, gameState) {
-    for (const snake of gameState.board.snakes) {
-        if (snake.id === gameState.you.id) continue;
-        
-        const enemyHead = snake.body[0];
-        const distance = Math.abs(myHead.x - enemyHead.x) + Math.abs(myHead.y - enemyHead.y);
-        
-        if (distance <= 2) {
-            return false;
-        }
-    }
-    return true;
-}
-
 export default function move(gameState) {
     let moveSafety = {
         up: true,
@@ -97,11 +83,13 @@ export default function move(gameState) {
         }
     }
     
+    let nearestEnemyDistance = Infinity;
     for (const snake of gameState.board.snakes) {
         if (snake.id === gameState.you.id) continue;
         
         const enemyHead = snake.body[0];
         const distanceToEnemy = Math.abs(myHead.x - enemyHead.x) + Math.abs(myHead.y - enemyHead.y);
+        nearestEnemyDistance = Math.min(nearestEnemyDistance, distanceToEnemy);
         
         if (distanceToEnemy <= 3) {
             const dx = enemyHead.x - myHead.x;
@@ -135,9 +123,10 @@ export default function move(gameState) {
     
     const myHealth = gameState.you.health;
     const food = gameState.board.food;
-    const isCompletelySafe = isSafeFromSnakes(myHead, possibleMoves, gameState);
     
-    if (myHealth >= 55 && isCompletelySafe) {
+    const isFarFromSnakes = nearestEnemyDistance > 3;
+    
+    if (myHealth >= 55 && isFarFromSnakes && safeMoves.length > 0) {
         const cyclePattern = ['right', 'down', 'left', 'up'];
         let nextMove = null;
         
@@ -163,6 +152,8 @@ export default function move(gameState) {
         console.log(`MOVE ${gameState.turn}: Health ${myHealth} cycling with ${nextMove}`);
         return { move: nextMove };
     }
+    
+    lastDirection = null;
     
     if (myHealth >= 30 && food.length > 0) {
         const nextMove = findBestFoodMove(myHead, safeMoves, possibleMoves, food);
