@@ -27,39 +27,7 @@ function findBestFoodMove(myHead, safeMoves, possibleMoves, food) {
     
     return bestMove || safeMoves[0];
 }
-function willTrapItself(nextPos, myBody, gameState) {
-    const bodyWithoutTail = myBody.slice(0, -1);
-    
-    for (const bp of bodyWithoutTail) {
-        if (bp.x === nextPos.x && bp.y === nextPos.y) {
-            return true;
-        }
-    }
-    
-    let futureSpace = 0;
-    const neighbors = [
-        {x: nextPos.x, y: nextPos.y + 1},
-        {x: nextPos.x, y: nextPos.y - 1},
-        {x: nextPos.x + 1, y: nextPos.y},
-        {x: nextPos.x - 1, y: nextPos.y}
-    ];
-    
-    for (const n of neighbors) {
-        if (n.x >= 0 && n.x < gameState.board.width &&
-            n.y >= 0 && n.y < gameState.board.height) {
-            let isOccupied = false;
-            for (const bp of bodyWithoutTail) {
-                if (bp.x === n.x && bp.y === n.y) {
-                    isOccupied = true;
-                    break;
-                }
-            }
-            if (!isOccupied) futureSpace++;
-        }
-    }
-    
-    return futureSpace <= 1;
-}
+
 function getNearestEnemyDistance(myHead, gameState) {
     let minDistance = Infinity;
     for (const snake of gameState.board.snakes) {
@@ -137,33 +105,84 @@ export default function move(gameState) {
     
     const enemyDistance = getNearestEnemyDistance(myHead, gameState);
     let safeMoves = Object.keys(moveSafety).filter(d => moveSafety[d]);
-        
+    
+    if (enemyDistance <= 2) {
+        let bestEscape = null;
+        let bestDist = -1;
+        for (const move of safeMoves) {
+            const nextPos = possibleMoves[move];
+            let minDistToEnemy = Infinity;
+            for (const snake of gameState.board.snakes) {
+                if (snake.id === gameState.you.id) continue;
+                const enemyHead = snake.body[0];
+                const dist = Math.abs(nextPos.x - enemyHead.x) + Math.abs(nextPos.y - enemyHead.y);
+                minDistToEnemy = Math.min(minDistToEnemy, dist);
+            }
+            if (minDistToEnemy > bestDist) {
+                bestDist = minDistToEnemy;
+                bestEscape = move;
+            }
+        }
+        if (bestEscape) {
+            console.log(`MOVE ${gameState.turn}: Emergency escape from enemy! ${bestEscape}`);
+            return { move: bestEscape };
+        }
+    }
+    
     let nonTrapMoves = [];
     for (const move of safeMoves) {
         const nextPos = possibleMoves[move];
-        if (!willTrapItself(nextPos, myBody, gameState)) {
-            nonTrapMoves.push(move);
+        const bodyWithoutTail = myBody.slice(0, -1);
+        let willTrap = false;
+        
+        for (const bp of bodyWithoutTail) {
+            if (bp.x === nextPos.x && bp.y === nextPos.y) {
+                willTrap = true;
+                break;
+            }
+        }
+        
+        if (!willTrap) {
+            let futureSpace = 0;
+            const neighbors = [
+                {x: nextPos.x, y: nextPos.y + 1},
+                {x: nextPos.x, y: nextPos.y - 1},
+                {x: nextPos.x + 1, y: nextPos.y},
+                {x: nextPos.x - 1, y: nextPos.y}
+            ];
+            for (const n of neighbors) {
+                if (n.x >= 0 && n.x < boardWidth && n.y >= 0 && n.y < boardHeight) {
+                    let occupied = false;
+                    for (const bp of bodyWithoutTail) {
+                        if (bp.x === n.x && bp.y === n.y) {
+                            occupied = true;
+                            break;
+                        }
+                    }
+                    if (!occupied) futureSpace++;
+                }
+            }
+            if (futureSpace > 0) nonTrapMoves.push(move);
         }
     }
     
     if (nonTrapMoves.length > 0) {
         safeMoves = nonTrapMoves;
     }
-if (safeMoves.length === 0) {
-    console.log(`MOVE ${gameState.turn}: No safe moves! Emergency fallback`);
-    const fallbackOrder = ['up', 'down', 'left', 'right'];
-    for (const dir of fallbackOrder) {
-        const nextPos = possibleMoves[dir];
-        if (nextPos.x >= 0 && nextPos.x < boardWidth &&
-            nextPos.y >= 0 && nextPos.y < boardHeight) {
-            console.log(`MOVE ${gameState.turn}: Emergency moving ${dir}`);
-            return { move: dir };
+    
+    if (safeMoves.length === 0) {
+        console.log(`MOVE ${gameState.turn}: No safe moves! Emergency fallback`);
+        const fallbackOrder = ['up', 'down', 'left', 'right'];
+        for (const dir of fallbackOrder) {
+            const nextPos = possibleMoves[dir];
+            if (nextPos.x >= 0 && nextPos.x < boardWidth && nextPos.y >= 0 && nextPos.y < boardHeight) {
+                console.log(`MOVE ${gameState.turn}: Emergency moving ${dir}`);
+                return { move: dir };
+            }
         }
+        console.log(`MOVE ${gameState.turn}: Completely stuck, moving down`);
+        return { move: "down" };
     }
-    console.log(`MOVE ${gameState.turn}: Completely stuck, moving down`);
-    return { move: "down" };
-}
-
     
     for (const snake of gameState.board.snakes) {
         if (snake.id === gameState.you.id) continue;
@@ -171,7 +190,7 @@ if (safeMoves.length === 0) {
         const enemyNeck = snake.body[1];
         const distance = Math.abs(myHead.x - enemyHead.x) + Math.abs(myHead.y - enemyHead.y);
         
-        if (distance === 2) {
+        if (distance === 2 && enemyNeck) {
             const enemyDir = {
                 x: enemyHead.x - enemyNeck.x,
                 y: enemyHead.y - enemyNeck.y
@@ -196,33 +215,6 @@ if (safeMoves.length === 0) {
     const myHealth = gameState.you.health;
     const food = gameState.board.food;
     
-    if (enemyDistance <= 2) {
-        let bestEscape = null;
-        let bestDistance = -1;
-        
-        for (const move of safeMoves) {
-            const nextPos = possibleMoves[move];
-            let minDistToEnemy = Infinity;
-            
-            for (const snake of gameState.board.snakes) {
-                if (snake.id === gameState.you.id) continue;
-                const enemyHead = snake.body[0];
-                const dist = Math.abs(nextPos.x - enemyHead.x) + Math.abs(nextPos.y - enemyHead.y);
-                minDistToEnemy = Math.min(minDistToEnemy, dist);
-            }
-            
-            if (minDistToEnemy > bestDistance) {
-                bestDistance = minDistToEnemy;
-                bestEscape = move;
-            }
-        }
-        
-        if (bestEscape) {
-            console.log(`MOVE ${gameState.turn}: Enemy very close! Escaping with ${bestEscape}`);
-            return { move: bestEscape };
-        }
-    }
-    
     if (myHealth >= 55 && enemyDistance > 3) {
         const cyclePattern = ['right', 'down', 'left', 'up'];
         let nextMove = null;
@@ -239,18 +231,18 @@ if (safeMoves.length === 0) {
         if (!nextMove && safeMoves.length > 0) {
             nextMove = safeMoves[0];
         }
-if (!nextMove) {
-    console.log(`MOVE ${gameState.turn}: No safe moves in cycle`);
-    const fallbackOrder = ['up', 'down', 'left', 'right'];
-    for (const dir of fallbackOrder) {
-        const nextPos = possibleMoves[dir];
-        if (nextPos.x >= 0 && nextPos.x < boardWidth &&
-            nextPos.y >= 0 && nextPos.y < boardHeight) {
-            return { move: dir };
+        
+        if (!nextMove) {
+            console.log(`MOVE ${gameState.turn}: No safe moves in cycle`);
+            const fallbackOrder = ['up', 'down', 'left', 'right'];
+            for (const dir of fallbackOrder) {
+                const nextPos = possibleMoves[dir];
+                if (nextPos.x >= 0 && nextPos.x < boardWidth && nextPos.y >= 0 && nextPos.y < boardHeight) {
+                    return { move: dir };
+                }
+            }
+            return { move: "down" };
         }
-    }
-    return { move: "down" };
-}
         
         lastDirection = nextMove;
         console.log(`MOVE ${gameState.turn}: Health ${myHealth} cycling with ${nextMove}`);
