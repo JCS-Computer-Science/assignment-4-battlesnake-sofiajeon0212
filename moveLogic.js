@@ -136,11 +136,8 @@ export default function move(gameState) {
     }
     
     const enemyDistance = getNearestEnemyDistance(myHead, gameState);
-    
-    const safeMoves = Object.keys(moveSafety).filter(d => moveSafety[d]);
-    
     let safeMoves = Object.keys(moveSafety).filter(d => moveSafety[d]);
-    
+        
     let nonTrapMoves = [];
     for (const move of safeMoves) {
         const nextPos = possibleMoves[move];
@@ -152,10 +149,21 @@ export default function move(gameState) {
     if (nonTrapMoves.length > 0) {
         safeMoves = nonTrapMoves;
     }
-    if (safeMoves.length === 0) {
-        console.log(`MOVE ${gameState.turn}: No safe moves! Moving down`);
-        return { move: "down" };
+if (safeMoves.length === 0) {
+    console.log(`MOVE ${gameState.turn}: No safe moves! Emergency fallback`);
+    const fallbackOrder = ['up', 'down', 'left', 'right'];
+    for (const dir of fallbackOrder) {
+        const nextPos = possibleMoves[dir];
+        if (nextPos.x >= 0 && nextPos.x < boardWidth &&
+            nextPos.y >= 0 && nextPos.y < boardHeight) {
+            console.log(`MOVE ${gameState.turn}: Emergency moving ${dir}`);
+            return { move: dir };
+        }
     }
+    console.log(`MOVE ${gameState.turn}: Completely stuck, moving down`);
+    return { move: "down" };
+}
+
     
     for (const snake of gameState.board.snakes) {
         if (snake.id === gameState.you.id) continue;
@@ -231,11 +239,18 @@ export default function move(gameState) {
         if (!nextMove && safeMoves.length > 0) {
             nextMove = safeMoves[0];
         }
-        
-        if (!nextMove) {
-            console.log(`MOVE ${gameState.turn}: No safe moves in cycle`);
-            return { move: "down" };
+if (!nextMove) {
+    console.log(`MOVE ${gameState.turn}: No safe moves in cycle`);
+    const fallbackOrder = ['up', 'down', 'left', 'right'];
+    for (const dir of fallbackOrder) {
+        const nextPos = possibleMoves[dir];
+        if (nextPos.x >= 0 && nextPos.x < boardWidth &&
+            nextPos.y >= 0 && nextPos.y < boardHeight) {
+            return { move: dir };
         }
+    }
+    return { move: "down" };
+}
         
         lastDirection = nextMove;
         console.log(`MOVE ${gameState.turn}: Health ${myHealth} cycling with ${nextMove}`);
