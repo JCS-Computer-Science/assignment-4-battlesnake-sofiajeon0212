@@ -139,6 +139,19 @@ export default function move(gameState) {
     
     const safeMoves = Object.keys(moveSafety).filter(d => moveSafety[d]);
     
+    let safeMoves = Object.keys(moveSafety).filter(d => moveSafety[d]);
+    
+    let nonTrapMoves = [];
+    for (const move of safeMoves) {
+        const nextPos = possibleMoves[move];
+        if (!willTrapItself(nextPos, myBody, gameState)) {
+            nonTrapMoves.push(move);
+        }
+    }
+    
+    if (nonTrapMoves.length > 0) {
+        safeMoves = nonTrapMoves;
+    }
     if (safeMoves.length === 0) {
         console.log(`MOVE ${gameState.turn}: No safe moves! Moving down`);
         return { move: "down" };
