@@ -27,7 +27,39 @@ function findBestFoodMove(myHead, safeMoves, possibleMoves, food) {
     
     return bestMove || safeMoves[0];
 }
-
+function willTrapItself(nextPos, myBody, gameState) {
+    const bodyWithoutTail = myBody.slice(0, -1);
+    
+    for (const bp of bodyWithoutTail) {
+        if (bp.x === nextPos.x && bp.y === nextPos.y) {
+            return true;
+        }
+    }
+    
+    let futureSpace = 0;
+    const neighbors = [
+        {x: nextPos.x, y: nextPos.y + 1},
+        {x: nextPos.x, y: nextPos.y - 1},
+        {x: nextPos.x + 1, y: nextPos.y},
+        {x: nextPos.x - 1, y: nextPos.y}
+    ];
+    
+    for (const n of neighbors) {
+        if (n.x >= 0 && n.x < gameState.board.width &&
+            n.y >= 0 && n.y < gameState.board.height) {
+            let isOccupied = false;
+            for (const bp of bodyWithoutTail) {
+                if (bp.x === n.x && bp.y === n.y) {
+                    isOccupied = true;
+                    break;
+                }
+            }
+            if (!isOccupied) futureSpace++;
+        }
+    }
+    
+    return futureSpace <= 1;
+}
 function getNearestEnemyDistance(myHead, gameState) {
     let minDistance = Infinity;
     for (const snake of gameState.board.snakes) {
